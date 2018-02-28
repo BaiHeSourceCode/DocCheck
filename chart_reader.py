@@ -6,31 +6,44 @@ __date__ = '2018/1/29'
 import rule_reader
 from wand.image import Image
 from wand.color import Color
-
+import cv2
+import numpy as np
+import chart_page
+import time
 
 
 class ChartReader(object):
     def __init__(self, file):
         self.file = file
-        rr = rule_reader.RuleReader()
-        self.config = rr.config_read('chart_size')
+        self.config = rule_reader.RuleReader('chart_size').config
 
     def read_chart(self):
         charts = []
         try:
             # 获取pdf图纸文件 ,pdf存储在local_pdf中， 规则为local_path + file.FileID + '.pdf'
-            with Image(filename=self.file.pdf_file, resolution=int(self.file.dpi)) as pages:
-                pages.background_color = Color("white")
-                pages.alpha_channel = 'flatten'
+            with Image(filename=self.file.pdf_file, resolution=int(self.file.dpi)) as page_imgs:
                 page_no = 0
                 # 访问图纸的每一页，并将其另存为图片对象
-                for page in pages.sequence:
-                    page = Image(image=page)
+                for img in page_imgs.sequence:
+                    img = Image(image=img)
+                    img.background_color = Color("white")
+                    img.alpha_channel = 'flatten'
+                    img.format = 'png'
+                    img.threshold(0.6)
+                    img_buffer = np.asarray(bytearray(img.make_blob()), dtype=np.uint8)
+                    cv2_img = cv2.imdecode(img_buffer, cv2.IMREAD_GRAYSCALE)
+                    ret, cv2_img = cv2.threshold(cv2_img, 127, 255, cv2.THRESH_BINARY)
+
                     # 获取图纸大小
-                    self.file.PDFPageSize = self.size_of_chart(page)
-                    chart_name = self.file.chart_path + self.file.FileID + str(page_no) + '.jpg'
-                    page.save(filename=chart_name)
-                    charts.append(chart_name)
+                    chart_size = self.size_of_chart(img)
+                    page = chart_page.Page(self.file, page_no, chart_size, cv2_img)
+                    yield page
+                    if self.file.config['chart']['out']:
+                        img.save(filename=self.file.chart_path + self.file.FileID + str(page_no) + 'wand.png')
+                    if self.file.config['chart']['out']:
+                        cv2.imwrite(self.file.chart_path + self.file.FileID + str(page_no) + 'cv2.png', cv2_img)
+                    charts.append(page)
+                    # yield chart_name
                     page_no += 1
 
         finally:

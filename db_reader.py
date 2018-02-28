@@ -31,7 +31,7 @@ class DB_Reader:
         else:
             return cur
 
-    def ExecQuery(self, sql):
+    def ExecQuery(self, sql: object) -> object:
         """
         执行查询语句
         返回的是一个包含tuple的list，list的元素是记录行，tuple的元素是每行记录的字段

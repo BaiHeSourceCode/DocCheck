@@ -11,7 +11,7 @@ import rule_reader
 
 class Parser(object):
     def __init__(self):
-        self.config = rule_reader.RuleReader().config_read('template')
+        self.config = rule_reader.RuleReader('template').config
 
     def word2pdf_parser(self, layouts, file) -> dict:
         areas = self.config.sections()

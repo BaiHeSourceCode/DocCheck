@@ -6,12 +6,11 @@ import db_reader
 
 
 class JSD_FILEMAIN():
-    def __init__(self, file_id, reader):
-        self.FileID = file_id
-        file = reader.ExecQuery(
-            "SELECT * FROM [CenterDB].[dbo].[JSD_FileMain] where [FileID]='" + self.FileID + "' AND IsDel=0")[0]
+    def __init__(self, file):
+        self.FileID = file[0]
+        # file = reader.ExecQuery(
+        #     "SELECT * FROM [CenterDB].[dbo].[JSD_FileMain] where [FileID]='" + self.FileID + "' AND IsDel=0")[0]
         self.JSDID = file[1]
-        self.FileCodeType = file[2]
         self.FileCodeType = file[2]
         self.FileCode = file[3]
         self.FileLanguage = file[4]
@@ -59,7 +58,7 @@ class JSD_FILEMAIN():
         self.FileDesignUId = file[46]
         self.FileDesignUName = file[47]
         self.FileDesignCreateDate = file[48]
-        self.LastModifyDate = str(file[49]).split(' ')[0] # 获得yyyy-mm-dd
+        self.LastModifyDate = str(file[49])
         self.IsDel = file[50]
         self.FileSize = file[51]
         self.cundanghao = file[52]
@@ -82,7 +81,8 @@ class JSD_FILEMAIN():
         else:
             self.title = ''
 
-if __name__ == "__main__":
-    dbreader = db_reader.DB_Reader(host="d-s48.cnpdc.com", user="p108034", pwd="123qweASD", db="CenterDB")
-    test = JSD_FILEMAIN('0000D3F8-E55D-4016-8B27-D0BF6CE7596B', dbreader)
-    print(test.JSDID)
+    def formate_LastModifyDate(self, pdf_type):
+        if pdf_type:
+            self.LastModifyDate = self.LastModifyDate.split(' ')[0]  # 获得yyyy-mm-dd
+        else:
+            self.LastModifyDate = self.LastModifyDate.split(' ')[0][0:7]# 获得yyyy-mm

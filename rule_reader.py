@@ -9,8 +9,9 @@ import configparser
 
 
 class RuleReader(object):
-    def __init__(self):
+    def __init__(self, config_file_name):
         self.config = configparser.ConfigParser()
+        self.config.read('resources/' + config_file_name + '.ini')
 
     def config_read(self, config_file_name):
         # 读取
